@@ -14,7 +14,7 @@ class POSTagger(object):
         self.total = 0
 
     def get_const_context(self):
-        return ['']
+        return ['DT']
 
     def train(self, tokens, order):
         print "training"
