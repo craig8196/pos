@@ -14,7 +14,7 @@ class POSTagger(object):
         self.total = 0
 
     def get_const_context(self):
-        return ['DT']
+        return 'DT'
 
     def train(self, tokens, order):
         print "training"
@@ -23,17 +23,18 @@ class POSTagger(object):
             temp_token_split = token.split('_')
             evidence_token = temp_token_split[0]
             pos_token = temp_token_split[1]
-            self.model[str(context)] = self.model.setdefault(str(context), ProbabilityMapper())
-            self.model[str(context)].transition_count[pos_token] = self.model[str(context)].transition_count.setdefault(pos_token, 0) + 1
-            self.model[str(context)].sensor_count[evidence_token] = self.model[str(context)].sensor_count.setdefault(evidence_token, 0) + 1
-            self.model[str(context)].total_count += 1
+            self.model[context] = self.model.setdefault(context, ProbabilityMapper())
+            self.model[context].transition_count[pos_token] = self.model[context].transition_count.setdefault(pos_token, 0) + 1
+            self.model[context].sensor_count[evidence_token] = self.model[context].sensor_count.setdefault(evidence_token, 0) + 1
+            self.model[context].total_count += 1
             self.total += 1
             if self.total % 100000 == 0:
                 print self.total
-            if len(context) < order:
-                context = context + [pos_token]
-            else:
-                context = (context + [pos_token])[1:]
+            context = pos_token
+            # if len(context) < order:
+            #     context = context + [pos_token]
+            # else:
+            #     context = (context + [pos_token])[1:]
 
     def handle_unknown(self, count_map, token):
         if token in count_map:
@@ -46,8 +47,8 @@ class POSTagger(object):
         total = len(tokens)
         for i in range(0, len(tokens)):
             pos_token = tokens[i].split('_')[1]
-            pos_token = "['" + pos_token + "']"
-            if i == 1:
+            if i == 0:
+
                 print pos_token
                 print chosen_sequence[i]
             if pos_token == chosen_sequence[i]:
@@ -63,7 +64,7 @@ class POSTagger(object):
         num_of_training_states = len(self.model)
         first_token = tokens[0].split('_')[0]
         for hidden_state, prob_map in self.model.iteritems():
-            #start probability for the state is the occurences for that state divided by the total number of state occurrences (from training data)
+            #start probability for the state is the occurrences for that state divided by the total number of state occurrences (from training data)
 
             #the numerator of the start probability and the denominator of the sensor model 
             #cancel each other out (the number of occurences of the state in the training data) 
@@ -79,7 +80,7 @@ class POSTagger(object):
 
             for hidden_state, prob_map in self.model.iteritems():
                 (state_value, state) = max((self.state_value_holder[obs_i - 1][h_state] + self.handle_unknown(prob_map.sensor_count, evi_token) \
-                + self.handle_unknown(prob_map.transition_count, h_state) - 2 * math.log(prob_map.total_count), h_state) for h_state in self.model.keys())
+                + self.handle_unknown(self.model[h_state].transition_count, hidden_state) - 2 * math.log(prob_map.total_count), h_state) for h_state in self.model.keys())
                 self.state_value_holder[obs_i][hidden_state] = state_value
                 new_sequence[hidden_state] = self.sequence_keeper[state] + [hidden_state]
 
@@ -97,7 +98,7 @@ if __name__ == "__main__":
     infile = 'assignment3/allTraining.txt'
     with open(infile, 'r') as f:
         tagger.train(f.read().split(), order)
-    # print tagger.model["['DT']"].transition_count["NN"]
+    print tagger.model["DT"].transition_count["NN"]
 
     outfile = 'assignment3/devtest.txt'
     with open(outfile, 'r') as f:
