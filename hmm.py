@@ -8,12 +8,12 @@ UNKNOWN = 'UNKNOWN_IDENTIFIER'
 class Counter(object):
     def __init__(self):
         self.pos_count = {}
-        self.pos_count[UNKNOWN] = 1
-        self.total_pos_count = 1
+        #~ self.pos_count[UNKNOWN] = 0.0001
+        self.total_pos_count = 0
         
         self.evidence_count = {}
-        self.evidence_count[UNKNOWN] = 1
-        self.total_evidence_count = 1
+        #~ self.evidence_count[UNKNOWN] = 0.01
+        self.total_evidence_count = 0
     
     def add_transition(self, pos):
         if pos not in self.pos_count:
@@ -31,6 +31,15 @@ class Counter(object):
     
     def get_total_pos_count(self):
         return self.total_pos_count
+    
+    def set_unknown(self, num_pos, num_evidence):
+        temp = 1/(num_pos-len(self.pos_count)+1)
+        self.pos_count[UNKNOWN] = temp
+        self.total_pos_count += temp
+        temp = 1/(num_evidence-len(self.evidence_count)+1)
+        self.evidence_count[UNKNOWN] = temp
+        self.total_evidence_count += temp
+        
     
     def clear_all_counts(self):
         self.pos_count = {}
@@ -89,13 +98,14 @@ PUNCTUATION = {
     ']': ')',
     '}': ')',
     ',': ',',
-    '--': '--',
+    '--': ':',
     '.': '.',
     '!': '.',
     '?': '.',
     ':': ':',
     ';': ':',
     '...': ':',
+    'to': 'TO',
 }
 
 class POSTagger(object):
@@ -107,6 +117,8 @@ class POSTagger(object):
         self.totals.clear_all_counts()
         self.double_totals = Counter()
         self.double_totals.clear_all_counts()
+        self.all_pos = set()
+        self.all_evidence = set()
 
     def train(self, tokens):
         print "Training..."
@@ -115,6 +127,8 @@ class POSTagger(object):
         for token in tokens:
             evidence_token, pos_token = token.split('_')
             evidence_token = evidence_token.lower()
+            self.all_pos.add(pos_token)
+            self.all_evidence.add(evidence_token)
             if context not in self.model:
                 self.model[context] = Counter()
             if pos_token not in self.model:
@@ -130,6 +144,7 @@ class POSTagger(object):
         # compute log probabilities and compile totals
         print "Computing totals and logs..."
         for k, v in self.model.items():
+            v.set_unknown(len(self.all_pos), len(self.all_evidence))
             self.totals.pos_count_counts(v)
             self.totals.evidence_count_counts(v)
             v.compute_pos_log_prob()
@@ -139,13 +154,21 @@ class POSTagger(object):
         self.model[UNKNOWN] = self.totals
         
         for k, v in self.double_model.items():
+            v.set_unknown(len(self.all_pos), len(self.all_evidence))
             self.double_totals.pos_count_counts(v)
             v.compute_pos_log_prob()
         self.double_totals.compute_pos_log_prob()
         self.double_model[UNKNOWN] = self.double_totals
         
-        #~ print self.totals.pos_count
-        #~ print self.totals.total_pos_count
+        print "All"
+        print self.totals.pos_count
+        print self.totals.total_pos_count
+        print "DT"
+        print self.model['DT'].pos_count
+        print self.model['DT'].total_pos_count
+        print "."
+        print self.model['.'].pos_count
+        print self.model['.'].total_pos_count
     
     def get_log_evidence_given_pos(self, evidence, pos):
         if pos not in self.model:
@@ -154,13 +177,18 @@ class POSTagger(object):
     
     def get_context_counts(self, context):
         if context not in self.model:
-            context = UNKNOWN
+            return self.totals
         return self.model[context]
     
     def get_double_context_counts(self, double_context):
         if double_context not in self.double_model:
-            double_context = UNKNOWN
-        return self.double_model[double_context]
+            if double_context[1] not in self.model:
+                print double_context
+                return self.double_model[UNKNOWN]
+            else:
+                return self.model[double_context[1]]
+        else:
+            return self.double_model[double_context]
     
     def get_max_path(self, paths):
         index = UNKNOWN
@@ -195,6 +223,11 @@ class POSTagger(object):
     def first_order_iterate(self, token, paths):
         evidence_token, pos_token = token.split('_')
         evidence_token = evidence_token.lower()
+        if evidence_token in PUNCTUATION:
+            for key, path in paths.items():
+                path.probability += self.get_log(path[-1], PUNCTUATION[evidence_token], evidence_token)
+                path.append(PUNCTUATION[evidence_token])
+            return
         
         for key, path in paths.items():
             context = path[-1]
@@ -214,6 +247,11 @@ class POSTagger(object):
     def second_order_iterate(self, token, paths):
         evidence_token, pos_token = token.split('_')
         evidence_token = evidence_token.lower()
+        if evidence_token in PUNCTUATION:
+            for key, path in paths.items():
+                path.probability += self.get_double_log((path[-2],path[-1]), PUNCTUATION[evidence_token], evidence_token)
+                path.append(PUNCTUATION[evidence_token])
+            return
         
         for key, path in paths.items():
             double_context = (path[-2], path[-1])
@@ -256,8 +294,6 @@ class POSTagger(object):
         print "Token count:", len(tokens)
         
         # initialize starting states
-        evidence_token, pos_token = tokens[0].split('_')
-        evidence_token = evidence_token.lower()
         paths = {}
         double_paths = {}
         correct_path = self.initialize(tokens[0], paths)
@@ -265,8 +301,8 @@ class POSTagger(object):
         
         self.first_order_iterate(tokens[1], double_paths)
         
-        total_first_order_iterations = 1000
-        total_second_order_iterations = 1000
+        total_first_order_iterations = 10
+        total_second_order_iterations = 10
         
         for i in range(1, total_first_order_iterations):
             self.first_order_iterate(tokens[i], paths)
