@@ -160,15 +160,27 @@ class POSTagger(object):
         self.double_totals.compute_pos_log_prob()
         self.double_model[UNKNOWN] = self.double_totals
         
-        print "All"
-        print self.totals.pos_count
-        print self.totals.total_pos_count
-        print "DT"
-        print self.model['DT'].pos_count
-        print self.model['DT'].total_pos_count
-        print "."
-        print self.model['.'].pos_count
-        print self.model['.'].total_pos_count
+        #~ print "All"
+        #~ print self.totals.pos_count
+        #~ print self.totals.total_pos_count
+        #~ print "."
+        #~ print self.model['.'].pos_count
+        #~ print self.model['.'].total_pos_count
+        print "POS"
+        print self.model['POS'].pos_count
+        print self.model['POS'].total_pos_count
+        #~ print "DT"
+        #~ print self.model['DT'].pos_count
+        #~ print self.model['DT'].total_pos_count
+        print 'IN'
+        print self.model['IN'].evidence_count[UNKNOWN]
+        print self.model['IN'].total_evidence_count
+        print 'POS'
+        print self.model['POS'].evidence_count['\'s']
+        print self.model['POS'].total_evidence_count
+        print 'DT->NN'
+        print self.double_model[('DT', 'NN')].pos_count
+        print self.double_model[('DT', 'NN')].total_pos_count
     
     def get_log_evidence_given_pos(self, evidence, pos):
         if pos not in self.model:
@@ -183,8 +195,8 @@ class POSTagger(object):
     def get_double_context_counts(self, double_context):
         if double_context not in self.double_model:
             if double_context[1] not in self.model:
-                print double_context
-                return self.double_model[UNKNOWN]
+                #~ print double_context
+                return self.totals
             else:
                 return self.model[double_context[1]]
         else:
@@ -218,6 +230,7 @@ class POSTagger(object):
             paths[pos] = p
             paths[pos].probability = self.totals.get_full_pos_log_prob(pos) + \
                                      self.get_log_evidence_given_pos(evidence_token, pos_token)
+            #~ print pos, self.totals.get_full_pos_log_prob(pos), self.get_log_evidence_given_pos(evidence_token, pos_token)
         return correct_path
     
     def first_order_iterate(self, token, paths):
@@ -231,6 +244,8 @@ class POSTagger(object):
         
         for key, path in paths.items():
             context = path[-1]
+            #~ if key == 'NN':
+                #~ print 'NNProb:', path.probability
             prob = path.probability
             max_prob = -sys.float_info.max
             max_token = UNKNOWN
@@ -241,7 +256,9 @@ class POSTagger(object):
                 if new_prob > max_prob:
                     max_prob = new_prob
                     max_token = next_pos
-            path.probabiliy = max_prob
+            path.probability = max_prob
+            #~ if key == 'NN':
+                #~ print 'NNProb:', path.probability, max_prob
             path.append(max_token)
     
     def second_order_iterate(self, token, paths):
@@ -265,25 +282,26 @@ class POSTagger(object):
                 if new_prob > max_prob:
                     max_prob = new_prob
                     max_token = next_pos
-            path.probabiliy = max_prob
+            path.probability = max_prob
             path.append(max_token)
     
     def confusion_matrix(self, name, mypath, correctpath, tokens):
         length = len(mypath)
         if len(correctpath) < length:
             length = len(correctpath)
-        print name
+        print 'Top 20 confused items for', name
         confused = {}
         for i in range(length):
             if mypath[i] != correctpath[i]:
                 key = (mypath[i], correctpath[i])
                 confused[key] = confused.setdefault(key, 0) + 1
-        for i in range(20):
-            m = max((v, conf) for conf, v in confused.items())
-            print m[1], m[0]
-            del(confused[m[1]])
-            if len(confused) == 0:
-                break
+        if len(confused) > 0:
+            for i in range(20):
+                m = max((v, conf) for conf, v in confused.items())
+                print m[1], m[0]
+                del(confused[m[1]])
+                if len(confused) == 0:
+                    break
     
     def test(self, tokens):
         if len(tokens)<2:
@@ -301,8 +319,8 @@ class POSTagger(object):
         
         self.first_order_iterate(tokens[1], double_paths)
         
-        total_first_order_iterations = 10
-        total_second_order_iterations = 10
+        total_first_order_iterations = 1000
+        total_second_order_iterations = 1000
         
         for i in range(1, total_first_order_iterations):
             self.first_order_iterate(tokens[i], paths)
@@ -311,12 +329,17 @@ class POSTagger(object):
         for i in range(2, total_second_order_iterations):
             self.second_order_iterate(tokens[i], double_paths)
         
+        #~ print correct_path
+        
         correct = 0
         max_path = self.get_max_path(paths)
         for i in range(len(max_path)):
             if correct_path[i] == max_path[i]:
                 correct += 1
         print "First order correct:", correct/total_first_order_iterations
+        #~ print max_path
+        #~ for k, path in paths.items():
+            #~ print path.probability, path
         self.confusion_matrix('first', max_path, correct_path, tokens)
         
         correct = 0
@@ -325,7 +348,9 @@ class POSTagger(object):
             if correct_path[i] == max_path[i]:
                 correct += 1
         print "Second order correct:", correct/total_second_order_iterations
+        #~ print max_path
         self.confusion_matrix('second', max_path, correct_path, tokens)
+        
 
 if __name__ == "__main__":
     tagger = POSTagger()
