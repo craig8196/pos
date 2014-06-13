@@ -1,39 +1,107 @@
 # Hidden Markov Model for Part of Speech Tagging
 import math
 
+UNKNOWN = 'UNKNOWN_IDENTIFIER'
 
-class ProbabilityMapper(object):
+class Counter(object):
     def __init__(self):
-        self.transition_count = {}
-        self.sensor_count = {}
-        self.total_count = 0
+        self.pos_count = {}
+        self.pos_count[UNKNOWN] = 1
+        self.total_pos_count = 1
+        
+        self.evidence_count = {}
+        self.evidence_count[UNKNOWN] = 1
+        self.total_evidence_count = 1
+    
+    def add_transition(self, pos):
+        self.pos_count[pos] = self.pos_count.setdefault(pos, 0) + 1
+        self.total_pos_count += 1
+    
+    def add_evidence(self, evidence):
+        self.evidence_count[evidence] = self.evidence_count.setdefault(evidence, 0) + 1
+        self.total_evidence_count += 1
+    
+    def get_total_pos_count(self):
+        return self.total_pos_count
+    
+    def clear_all_counts(self):
+        self.pos_count = {}
+        self.total_pos_count = 0
+        
+        self.evidence_count = {}
+        self.total_evidence_count = 0
+    
+    def pos_count_counts(self, counter):
+        for pos in counter.pos_count:
+            count = counter.pos_count[pos]
+            self.pos_count[pos] = self.pos_count.setdefault(pos, 0) + count
+            self.total_pos_count += count
+    
+    def compute_pos_log_prob(self):
+        self.pos_log = {}
+        self.total_pos_log = math.log(self.total_pos_count)
+        for pos, count in self.pos_count.items():
+            self.pos_log[pos] = math.log(count) - self.total_pos_log
+    
+    def compute_evidence_log_prob(self):
+        self.evidence_log = {}
+        self.total_evidence_log = math.log(self.total_evidence_count)
+        for ev, count in self.evidence_count.items():
+            self.evidence_log[ev] = math.log(count) - self.total_evidence_log
+    
+    def get_full_pos_log_prob(self, pos):
+        if pos not in self.pos_count:
+            pos = UNKNOWN
+        return self.pos_log[pos]
+    
+    def get_full_evidence_log_prob(self, evidence):
+        if evidence not in self.evidence_log:
+            evidence = UNKNOWN
+        return self.evidence_log[evidence]
+
+class Path(list):
+    def __init__(self):
+        super(list, self).__init__()
+        self.probability = 0
 
 class POSTagger(object):
     def __init__(self):
-        self.model = {}
-        self.total = 0
+        self.model = {} # pos model
+        self.model[UNKNOWN] = Counter()
+        self.total_pos = Counter()
+        self.total_pos.clear_all_counts()
 
-    def get_const_context(self):
-        return ['DT']
+    def get_const_context(self, order=1):
+        if order == 1:
+            return '.'
+        else:
+            result = []
+            for i in range(order):
+                result.append('')
+            return result
 
-    def train(self, tokens, order):
-        print "training"
-        context = self.get_const_context()
+    def train(self, tokens, order=1):
+        print "Training..."
+        context = '.'
         for token in tokens:
-            temp_token_split = token.split('_')
-            evidence_token = temp_token_split[0]
-            pos_token = temp_token_split[1]
-            self.model[str(context)] = self.model.setdefault(str(context), ProbabilityMapper())
-            self.model[str(context)].transition_count[pos_token] = self.model[str(context)].transition_count.setdefault(pos_token, 0) + 1
-            self.model[str(context)].sensor_count[evidence_token] = self.model[str(context)].sensor_count.setdefault(evidence_token, 0) + 1
-            self.model[str(context)].total_count += 1
-            self.total += 1
-            if self.total % 100000 == 0:
-                print self.total
-            if len(context) < order:
-                context = context + [pos_token]
-            else:
-                context = (context + [pos_token])[1:]
+            evidence_token, pos_token = token.split('_')
+            self.model[context] = self.model.setdefault(context, Counter())
+            mapper = self.model[context]
+            mapper.add_transition(pos_token)
+            mapper.add_evidence(evidence_token)
+            context = pos_token
+        
+        # find total pos token counts for computing P(Z=pos_token)
+        # compute log probabilities
+        print "Computing totals and logs..."
+        for k, v in self.model.items():
+            self.total_pos.pos_count_counts(v)
+            v.compute_pos_log_prob()
+            v.compute_evidence_log_prob()
+        self.total_pos.compute_pos_log_prob()
+        
+        print self.total_pos.pos_count
+        print self.total_pos.total_pos_count
 
     def handle_unknown(self, count_map, token):
         if token in count_map:
@@ -53,12 +121,32 @@ class POSTagger(object):
             if pos_token == chosen_sequence[i]:
                 total_correct += 1
         print total_correct * 1.0 / total 
-
-    def test(self, tokens):
-        print "testing"
-        self.state_value_holder = [{}]
-        self.sequence_keeper = {}
-
+    
+    def get_log_evidence_given_pos(self, evidence, pos):
+        if pos not in self.model:
+            pos = UNKNOWN
+        return self.model[pos].get_full_evidence_log_prob(evidence)
+        
+    
+    def test(self, tokens, order=1):
+        if len(tokens)<1:
+            raise Exception("Can't test zero tokens.")
+        
+        print "Testing..."
+        
+        # initialize starting states
+        evidence_token, pos_token = tokens[0].split('_')
+        paths = {}
+        correct_path = Path() + [pos_token]
+        for pos in self.total_pos.pos_count:
+            p = Path()
+            p.append(pos)
+            paths[pos] = p
+            paths[pos].probability = self.total_pos.get_full_pos_log_prob(pos) + \
+                                     self.get_log_evidence_given_pos(evidence_token, pos_token)
+        
+        print paths
+        raise Exception('stop')
         num_of_observations = len(tokens)
         num_of_training_states = len(self.model)
         first_token = tokens[0].split('_')[0]
@@ -79,7 +167,7 @@ class POSTagger(object):
 
             for hidden_state, prob_map in self.model.iteritems():
                 (state_value, state) = max((self.state_value_holder[obs_i - 1][h_state] + self.handle_unknown(prob_map.sensor_count, evi_token) \
-                + self.handle_unknown(prob_map.transition_count, h_state) - 2 * math.log(prob_map.total_count), h_state) for h_state in self.model.keys())
+                + self.handle_unknown(prob_map.pos_count, h_state) - 2 * math.log(prob_map.total_count), h_state) for h_state in self.model.keys())
                 self.state_value_holder[obs_i][hidden_state] = state_value
                 new_sequence[hidden_state] = self.sequence_keeper[state] + [hidden_state]
 
@@ -97,9 +185,8 @@ if __name__ == "__main__":
     infile = 'assignment3/allTraining.txt'
     with open(infile, 'r') as f:
         tagger.train(f.read().split(), order)
-    # print tagger.model["['DT']"].transition_count["NN"]
 
     outfile = 'assignment3/devtest.txt'
     with open(outfile, 'r') as f:
-        tagger.test(f.read().split())
+        tagger.test(f.read().split(), order)
 
