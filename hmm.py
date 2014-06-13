@@ -1,4 +1,6 @@
 # Hidden Markov Model for Part of Speech Tagging
+from __future__ import division
+import sys
 import math
 
 UNKNOWN = 'UNKNOWN_IDENTIFIER'
@@ -14,11 +16,17 @@ class Counter(object):
         self.total_evidence_count = 1
     
     def add_transition(self, pos):
-        self.pos_count[pos] = self.pos_count.setdefault(pos, 0) + 1
+        if pos not in self.pos_count:
+            self.pos_count[pos] = 1
+            self.total_pos_count += 1
+        self.pos_count[pos] += 1
         self.total_pos_count += 1
     
     def add_evidence(self, evidence):
-        self.evidence_count[evidence] = self.evidence_count.setdefault(evidence, 0) + 1
+        if evidence not in self.evidence_count:
+            self.evidence_count[evidence] = 1
+            self.total_evidence_count += 1
+        self.evidence_count[evidence] += 1
         self.total_evidence_count += 1
     
     def get_total_pos_count(self):
@@ -36,6 +44,11 @@ class Counter(object):
             count = counter.pos_count[pos]
             self.pos_count[pos] = self.pos_count.setdefault(pos, 0) + count
             self.total_pos_count += count
+        
+    def evidence_count_counts(self, counter):
+        for ev, count in counter.evidence_count.items():
+            self.evidence_count[ev] = self.evidence_count.setdefault(ev, 0) + count
+            self.total_evidence_count += count
     
     def compute_pos_log_prob(self):
         self.pos_log = {}
@@ -50,7 +63,7 @@ class Counter(object):
             self.evidence_log[ev] = math.log(count) - self.total_evidence_log
     
     def get_full_pos_log_prob(self, pos):
-        if pos not in self.pos_count:
+        if pos not in self.pos_log:
             pos = UNKNOWN
         return self.pos_log[pos]
     
@@ -64,129 +77,228 @@ class Path(list):
         super(list, self).__init__()
         self.probability = 0
 
+PUNCTUATION = {
+    '`': '``',
+    '``': '``',
+    "'": "''",
+    "''": "''",
+    '(': '(',
+    '[': '(',
+    '{': '(',
+    ')': ')',
+    ']': ')',
+    '}': ')',
+    ',': ',',
+    '--': '--',
+    '.': '.',
+    '!': '.',
+    '?': '.',
+    ':': ':',
+    ';': ':',
+    '...': ':',
+}
+
 class POSTagger(object):
     def __init__(self):
         self.model = {} # pos model
-        self.model[UNKNOWN] = Counter()
-        self.total_pos = Counter()
-        self.total_pos.clear_all_counts()
+        self.double_model = {}
+        self.double_emit = {}
+        self.totals = Counter()
+        self.totals.clear_all_counts()
+        self.double_totals = Counter()
+        self.double_totals.clear_all_counts()
 
-    def get_const_context(self, order=1):
-        if order == 1:
-            return '.'
-        else:
-            result = []
-            for i in range(order):
-                result.append('')
-            return result
-
-    def train(self, tokens, order=1):
+    def train(self, tokens):
         print "Training..."
         context = '.'
+        double_context = (tokens[-2].split('_')[1], tokens[-1].split('_')[1])
         for token in tokens:
             evidence_token, pos_token = token.split('_')
-            self.model[context] = self.model.setdefault(context, Counter())
-            mapper = self.model[context]
-            mapper.add_transition(pos_token)
-            mapper.add_evidence(evidence_token)
+            evidence_token = evidence_token.lower()
+            if context not in self.model:
+                self.model[context] = Counter()
+            if pos_token not in self.model:
+                self.model[pos_token] = Counter()
+            if double_context not in self.double_model:
+                self.double_model[double_context] = Counter()
+            self.model[context].add_transition(pos_token)
+            self.model[pos_token].add_evidence(evidence_token)
+            self.double_model[double_context].add_transition(pos_token)
             context = pos_token
+            double_context = (double_context[1], pos_token)
         
-        # find total pos token counts for computing P(Z=pos_token)
-        # compute log probabilities
+        # compute log probabilities and compile totals
         print "Computing totals and logs..."
         for k, v in self.model.items():
-            self.total_pos.pos_count_counts(v)
+            self.totals.pos_count_counts(v)
+            self.totals.evidence_count_counts(v)
             v.compute_pos_log_prob()
             v.compute_evidence_log_prob()
-        self.total_pos.compute_pos_log_prob()
+        self.totals.compute_pos_log_prob()
+        self.totals.compute_evidence_log_prob()
+        self.model[UNKNOWN] = self.totals
         
-        print self.total_pos.pos_count
-        print self.total_pos.total_pos_count
-
-    def handle_unknown(self, count_map, token):
-        if token in count_map:
-            return math.log(count_map[token])
-        else:
-            return 0
-
-    def compare_tags(self, tokens, chosen_sequence):
-        total_correct = 0
-        total = len(tokens)
-        for i in range(0, len(tokens)):
-            pos_token = tokens[i].split('_')[1]
-            pos_token = "['" + pos_token + "']"
-            if i == 1:
-                print pos_token
-                print chosen_sequence[i]
-            if pos_token == chosen_sequence[i]:
-                total_correct += 1
-        print total_correct * 1.0 / total 
+        for k, v in self.double_model.items():
+            self.double_totals.pos_count_counts(v)
+            v.compute_pos_log_prob()
+        self.double_totals.compute_pos_log_prob()
+        self.double_model[UNKNOWN] = self.double_totals
+        
+        #~ print self.totals.pos_count
+        #~ print self.totals.total_pos_count
     
     def get_log_evidence_given_pos(self, evidence, pos):
         if pos not in self.model:
             pos = UNKNOWN
         return self.model[pos].get_full_evidence_log_prob(evidence)
-        
     
-    def test(self, tokens, order=1):
-        if len(tokens)<1:
-            raise Exception("Can't test zero tokens.")
-        
-        print "Testing..."
-        
-        # initialize starting states
-        evidence_token, pos_token = tokens[0].split('_')
-        paths = {}
+    def get_context_counts(self, context):
+        if context not in self.model:
+            context = UNKNOWN
+        return self.model[context]
+    
+    def get_double_context_counts(self, double_context):
+        if double_context not in self.double_model:
+            double_context = UNKNOWN
+        return self.double_model[double_context]
+    
+    def get_max_path(self, paths):
+        index = UNKNOWN
+        for key in paths:
+            if paths[key].probability > paths[index].probability:
+                index = key
+        return paths[index]
+    
+    def get_log(self, context, next_pos, evidence_token):
+        counts = self.get_context_counts(context)
+        next_counts = self.get_context_counts(next_pos)
+        return counts.get_full_pos_log_prob(next_pos)+next_counts.get_full_evidence_log_prob(evidence_token)
+    
+    def get_double_log(self, double_context, next_pos, evidence_token):
+        counts = self.get_double_context_counts(double_context)
+        next_counts = self.get_context_counts(next_pos)
+        return counts.get_full_pos_log_prob(next_pos)+next_counts.get_full_evidence_log_prob(evidence_token)
+    
+    def initialize(self, token, paths):
+        evidence_token, pos_token = token.split('_')
+        evidence_token = evidence_token.lower()
+        double_paths = {}
         correct_path = Path() + [pos_token]
-        for pos in self.total_pos.pos_count:
+        for pos in self.totals.pos_count:
             p = Path()
             p.append(pos)
             paths[pos] = p
-            paths[pos].probability = self.total_pos.get_full_pos_log_prob(pos) + \
+            paths[pos].probability = self.totals.get_full_pos_log_prob(pos) + \
                                      self.get_log_evidence_given_pos(evidence_token, pos_token)
+        return correct_path
+    
+    def first_order_iterate(self, token, paths):
+        evidence_token, pos_token = token.split('_')
+        evidence_token = evidence_token.lower()
         
-        print paths
-        raise Exception('stop')
-        num_of_observations = len(tokens)
-        num_of_training_states = len(self.model)
-        first_token = tokens[0].split('_')[0]
-        for hidden_state, prob_map in self.model.iteritems():
-            #start probability for the state is the occurences for that state divided by the total number of state occurrences (from training data)
-
-            #the numerator of the start probability and the denominator of the sensor model 
-            #cancel each other out (the number of occurences of the state in the training data) 
-            self.state_value_holder[0][hidden_state] = self.handle_unknown(prob_map.sensor_count, first_token) - math.log(self.total)
-            self.sequence_keeper[hidden_state] = [hidden_state]
-
-        for obs_i in range(1, num_of_observations):
-            if obs_i % 1000 == 0:
-                print obs_i
-            self.state_value_holder.append({})
-            new_sequence = {}
-            evi_token = tokens[obs_i].split('_')[0]
-
-            for hidden_state, prob_map in self.model.iteritems():
-                (state_value, state) = max((self.state_value_holder[obs_i - 1][h_state] + self.handle_unknown(prob_map.sensor_count, evi_token) \
-                + self.handle_unknown(prob_map.pos_count, h_state) - 2 * math.log(prob_map.total_count), h_state) for h_state in self.model.keys())
-                self.state_value_holder[obs_i][hidden_state] = state_value
-                new_sequence[hidden_state] = self.sequence_keeper[state] + [hidden_state]
-
-            self.sequence_keeper = new_sequence
-
-        (state_value, state) = max((self.state_value_holder[obs_i][h_state], h_state) for h_state in self.model.keys())
-        self.best_sequence = self.sequence_keeper[state]
-        self.compare_tags(tokens, self.best_sequence)
-
+        for key, path in paths.items():
+            context = path[-1]
+            prob = path.probability
+            max_prob = -sys.float_info.max
+            max_token = UNKNOWN
+            counts = self.get_context_counts(context)
+            # find path with max probability
+            for next_pos in counts.pos_count:
+                new_prob = prob + self.get_log(context, next_pos, evidence_token)
+                if new_prob > max_prob:
+                    max_prob = new_prob
+                    max_token = next_pos
+            path.probabiliy = max_prob
+            path.append(max_token)
+    
+    def second_order_iterate(self, token, paths):
+        evidence_token, pos_token = token.split('_')
+        evidence_token = evidence_token.lower()
+        
+        for key, path in paths.items():
+            double_context = (path[-2], path[-1])
+            prob = path.probability
+            max_prob = -sys.float_info.max
+            max_token = UNKNOWN
+            counts = self.get_double_context_counts(double_context)
+            # find path with max probability
+            for next_pos in counts.pos_count:
+                new_prob = prob + self.get_double_log(double_context, next_pos, evidence_token)
+                if new_prob > max_prob:
+                    max_prob = new_prob
+                    max_token = next_pos
+            path.probabiliy = max_prob
+            path.append(max_token)
+    
+    def confusion_matrix(self, name, mypath, correctpath, tokens):
+        length = len(mypath)
+        if len(correctpath) < length:
+            length = len(correctpath)
+        print name
+        confused = {}
+        for i in range(length):
+            if mypath[i] != correctpath[i]:
+                key = (mypath[i], correctpath[i])
+                confused[key] = confused.setdefault(key, 0) + 1
+        for i in range(20):
+            m = max((v, conf) for conf, v in confused.items())
+            print m[1], m[0]
+            del(confused[m[1]])
+            if len(confused) == 0:
+                break
+    
+    def test(self, tokens):
+        if len(tokens)<2:
+            raise Exception("Can't test one or fewer tokens.")
+        
+        print "Testing..."
+        
+        print "Token count:", len(tokens)
+        
+        # initialize starting states
+        evidence_token, pos_token = tokens[0].split('_')
+        evidence_token = evidence_token.lower()
+        paths = {}
+        double_paths = {}
+        correct_path = self.initialize(tokens[0], paths)
+        self.initialize(tokens[0], double_paths)
+        
+        self.first_order_iterate(tokens[1], double_paths)
+        
+        total_first_order_iterations = 1000
+        total_second_order_iterations = 1000
+        
+        for i in range(1, total_first_order_iterations):
+            self.first_order_iterate(tokens[i], paths)
+            correct_path.append(tokens[i].split('_')[1])
+        
+        for i in range(2, total_second_order_iterations):
+            self.second_order_iterate(tokens[i], double_paths)
+        
+        correct = 0
+        max_path = self.get_max_path(paths)
+        for i in range(len(max_path)):
+            if correct_path[i] == max_path[i]:
+                correct += 1
+        print "First order correct:", correct/total_first_order_iterations
+        self.confusion_matrix('first', max_path, correct_path, tokens)
+        
+        correct = 0
+        max_path = self.get_max_path(double_paths)
+        for i in range(len(max_path)):
+            if correct_path[i] == max_path[i]:
+                correct += 1
+        print "Second order correct:", correct/total_second_order_iterations
+        self.confusion_matrix('second', max_path, correct_path, tokens)
 
 if __name__ == "__main__":
-    order = 1
     tagger = POSTagger()
 
     infile = 'assignment3/allTraining.txt'
     with open(infile, 'r') as f:
-        tagger.train(f.read().split(), order)
+        tagger.train(f.read().split())
 
     outfile = 'assignment3/devtest.txt'
     with open(outfile, 'r') as f:
-        tagger.test(f.read().split(), order)
+        tagger.test(f.read().split())
 
