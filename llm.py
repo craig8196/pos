@@ -57,11 +57,11 @@ if __name__ == '__main__':
     order = 2
     ll = LanguageLearner()
     
-    infile = 'assignment3/allTraining.txt'
+    infile = 'assignment3/labs.txt'
     with open(infile, 'r') as f:
         ll.train(f.read().split(), order)
     
-    ll.generate_text(100, order)
+    ll.generate_text(200, order)
         
     
     
