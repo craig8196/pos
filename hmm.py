@@ -166,21 +166,21 @@ class POSTagger(object):
         #~ print "."
         #~ print self.model['.'].pos_count
         #~ print self.model['.'].total_pos_count
-        print "POS"
-        print self.model['POS'].pos_count
-        print self.model['POS'].total_pos_count
+        #~ print "POS"
+        #~ print self.model['POS'].pos_count
+        #~ print self.model['POS'].total_pos_count
         #~ print "DT"
         #~ print self.model['DT'].pos_count
         #~ print self.model['DT'].total_pos_count
-        print 'IN'
-        print self.model['IN'].evidence_count[UNKNOWN]
-        print self.model['IN'].total_evidence_count
-        print 'POS'
-        print self.model['POS'].evidence_count['\'s']
-        print self.model['POS'].total_evidence_count
-        print 'DT->NN'
-        print self.double_model[('DT', 'NN')].pos_count
-        print self.double_model[('DT', 'NN')].total_pos_count
+        #~ print 'IN'
+        #~ print self.model['IN'].evidence_count[UNKNOWN]
+        #~ print self.model['IN'].total_evidence_count
+        #~ print 'POS'
+        #~ print self.model['POS'].evidence_count['\'s']
+        #~ print self.model['POS'].total_evidence_count
+        #~ print 'DT->NN'
+        #~ print self.double_model[('DT', 'NN')].pos_count
+        #~ print self.double_model[('DT', 'NN')].total_pos_count
     
     def get_log_evidence_given_pos(self, evidence, pos):
         if pos not in self.model:

@@ -22,6 +22,8 @@ class LanguageLearner(object):
         for token in tokens:
             token = token.split('_')[0]
             token = ''.join(c for c in token if c.isalpha())
+            if token == '':
+                continue
             self.model[str(context)] = self.model.setdefault(str(context), ContextCounter())
             self.model[str(context)].token_counter[token] = self.model[str(context)].token_counter.setdefault(token, 0) + 1
             self.model[str(context)].count += 1
@@ -57,11 +59,11 @@ if __name__ == '__main__':
     order = 2
     ll = LanguageLearner()
     
-    infile = 'homework.txt'
+    infile = 'assignment3/allTraining.txt'
     with open(infile, 'r') as f:
         ll.train(f.read().split(), order)
     
-    ll.generate_text(200, order)
+    ll.generate_text(100, order)
         
     
     
