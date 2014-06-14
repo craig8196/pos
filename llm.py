@@ -57,7 +57,7 @@ if __name__ == '__main__':
     order = 2
     ll = LanguageLearner()
     
-    infile = 'assignment3/labs.txt'
+    infile = 'homework.txt'
     with open(infile, 'r') as f:
         ll.train(f.read().split(), order)
     

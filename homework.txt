@@ -1,0 +1,303 @@
+Objectives
+Exercise the PEAS formalization of intelligent agents.
+Recognize that there is more than one way to think about intelligent agents, so reconsider the same agents using a different approach.
+Agents Homework
+[10 points] Problem 2.4 (in the textbook) JUST SOCCER and BIDDING (the first and the last items in the list of activities): Give a few sentences for each part of the peas model. A little more for the parts you find interesting; but maybe only one or two sentences for items you think are really obvious.
+[10 points] Repeat the problem given above but instead of doing a PEAS description do a Decision Theory description (see "Frameworks for Decision Making" in "Content" or Another view of agents).
+
+Objectives
+Learn about the BZRFlag environment that we will be using as context for study of intelligent agents.
+Form a lab team (pair) and get a feel for the kinds of actuators and sensors that will be available to you in BZRFlag.
+BZFlag Tutorial Homework
+Some of the labs in CS 470 involve writing agents to control robot tanks in the open-source tank battle game, BZFlag. At least, they used to. Because actually using BZFlag was a maintenance nightmare, we wrote a simple clone of BZFlag, called BZRFlag (BZFlag with robots), that you will actually interact with. This assignment will help you become acquainted with the environment used for the labs. Along with this assignment, you will also be expected to report on who your partner will be or whether you will be working alone (working with a partner is strongly encouraged).
+
+Assignment Overview
+Play a game of capture the flag in BZFlag.
+Manually control a robot tank.
+Choose a lab partner and programming environment.
+ 
+
+Part 1: Play a game of capture the flag
+[5 points] The first part of the assignment is to play a game of capture the flag to become acquainted with BZFlag. Even though you will not be using the real BZFlag for the labs, we want you to be familiar with the basic idea of the game. Play with other members of your class.
+
+Start a bzfs server as follows (on a Linux machine in the labs):
+
+bzfs -c -d -set _tankAngVel 0.5 -set _rejoinTime 0 
+Start a client by running:
+
+bzflag
+If you would like to run it in a window so that you can use other windows as well, then give bzflag the "-window 1024x768" argument and set "Confine mouse" to "No" in "Options:Input Settings."
+
+A few hints:
+
+Under "Join Game," you can either find an online server to connect to, and play with people over the internet, or you can start your own game, if there are a few of you trying this out together. (Generally the first command, with bzfs, is only necessary if you are going to start your own game. Then you connect to localhost.)
+Once you are playing, press ESC to get to the menu, and in that menu, see the "Help" section to know how to control the tank.
+Remember, this is just to get an idea of the game that you'll be building an artificial intelligence for. Don't spend too much time on this.
+
+Part 2: Manually control a tank
+[10 points] Now that you are familiar with BZFlag, you will get familiar with the simple clone that we created, BZRFlag.
+
+Install BZRFlag
+Clone the git repository so that you have a copy for yourself that you can modify as you wish (like to make your own scripts in the same directory as bzrflag, or keep your agent code along side the bzrflag code). You should periodically pull from the repository to be sure you have the most up-to-date code. The packages you will need are pygame and pyparsing. On Ubuntu, you can run "sudo apt-get install python-pygame python-pyparsing". On Fedora, the command is "sudo yum install pygame pyparsing".
+
+If you get it to run on Windows (it should be able to with those packages), let us know so other people can benefit from your experience. A friendly classmate has created the page BZRFlag on Windows. Feel free to update it.
+
+To clone the git repository, run:
+
+git clone git://aml.cs.byu.edu/bzrflag.git
+and
+
+git pull
+to update your clone of the repository.
+
+The rest of this description assumes that you are in the bzrflag directory.
+
+Back to the tutorial
+The server is run with the command:
+
+./bin/bzrflag
+To get a list of the command line options you can use, run:
+
+./bin/bzrflag -h
+There are a few scripts in the directory that start everything with appropriate flags. Feel free to modify those or create your own as you need (assuming you copied the directory). If you are on a laptop with low resolution, the option to change the size of the window when it comes up is --window-size=[size]x[size]. There's a bug where if it tries to make the window too big, you can't scroll correctly, so if you run into that just make the window smaller.
+
+Run simple.sh (./simple.sh). This brings up BZRFlag, with four teams in a simple world. It also prints out what port each team is listening on. In order to control the tanks, you need to talk to that port. The protocol that BZRFlag uses is the BZRC Protocol. You will need to use this protocol, so become familiar with how it works. For this homework, you may want to just skim it and get the general idea. For the labs, you will need to understand it well.
+
+Now, we will give a simple tutorial on how to control the tanks, to get some practice with the BZRC protocol. Open another terminal and run:
+
+telnet localhost [port] (pick a color and use one of the ports printed out by bzrflag)
+You are now connected to the bots. The bots should introduce themselves by saying:
+
+bzrobots 1
+Complete the introductions by typing:
+
+agent 1
+The bots now recognize you and are happy to follow your bidding. Just for fun, send the following instruction to the first bot, whose id is 0:
+
+shoot 0
+You should see a shot fired from one of the bots. While the first bot's cannon is being loaded, tell the second bot, whose id is 1, to shoot:
+
+shoot 1
+You can also move the bots around. You can set a desired speed, where 1.0 is the maximum forward speed, and -1.0 is maximum reverse speed. Similarly, you can set a desired angular velocity, where 1.0 is maximum counter-clockwise and -1.0 is maximum clockwise. Just specify the command, bot, and value, like so:
+
+speed 0 1.0
+angvel 0 0.5
+speed 1 -0.7
+speed 0 0.0
+angvel 0 0.0
+speed 1 0.0
+This will set the speed of bot 0 to maximum forward speed, and then tell it to rotate counter-clockwise at half of the maximum possible angular velocity. Then the second bot is told to go in reverse at 70% of the maximum possible speed. Finally, the two tanks are stopped.
+
+With your partner, continue experimenting with controlling the tanks. Get to the point that you can explode a stationary tank by typing commands to your tank.
+
+What to turn in
+Turn in a summary of the expereince with the following information:
+
+List the names of the people you played capture the flag with.
+Show your partner that you can shoot a stationary tank by typing commands, and print the commands you used, by cutting them from your terminal and pasting them into your summary.
+Write who your lab partner will be, what language you will be programming in, and what platform (Linux, Windows, etc.) you will be using.
+
+Objectives
+Learn about pruning.
+Start learning about how one might make choices in an uncertain environment.
+Games Homework
+[25 points] Prune the following tree using Alpha-Beta Pruning with random nodes by marking pruned nodes with an X. Please prune left to right. The numbers under the Random nodes (labeled Ran) are the probabilities of each branch.
+
+Assume that you know that all values are between 0 and 10.
+
+ 
+
+                     Max
+                   /     \
+                 Ran       Ran
+              /     |     |    \
+            0.7    0.3   0.8    0.2
+            /        |     |        \
+          Min       Min   Min       Min
+         /  \       / \   / \      /    \
+        9    10    9   7 2   10   5     8
+
+Show your work step by step, not just the end result of the punning.
+
+Objectives
+Experiment with independence
+Use Bayes law in small problems.
+See how Bayes law can be used to solve (somewhat) real problems.
+Bayes Homework
+1. [10] Show that the random variables X and Y, with probabilities given below are are or are not independent.
+
+x	 0	 0	 1	 1
+y	 0	 1	 0	 1
+P(X=x, Y=y)	 0.37	 0.03	 0.48	 0.12
+2. [10] Show that the random variables X and Y, with probabilities given below are are or are not conditionally independent given Z.
+
+x	 0	 0	 0	 0	 1	 1	 1	 1
+y	 0	 0	 1	 1	 0	 0	 1	 1
+z	 0	 1	 0	 1	 0	 1	 0	 1
+P(X=x, Y=y, Z=z)	 0.05	 0.2	 0.05	 0.05	 0.15	 0.3	 0.1	 0.1
+3. [10 points] This problem comes from G. Gigerenzer, "Calculated Risks: How To Know When Numbers Deceive You", Simon and Schuster Press, 2002. Give the answer and show how you obtain the results using Bayes rule.
+
+To diagnose colorectal cancer, the hemoccult test --- among others --- is conducted to detect occult blood in the stool. This test is used from a particular age on, but also in routine screening for early detection of colorectal cancer. Imagine you conduct a screening using a hemoccult test in a certain region. For symptom-free people over 50 years old who participate in screening using the hemoccult test, the following information is available for this region.
+
+The probability that one of these people has colorectal cancer is 0.3 percent. If a person has colorectal cancer, the probability is 50 percent that this person will have a positive hemoccult test. If a person does not have colorectal cancer, the probability is 3 percent that this person will still have a positive hemoccult test. Imagine a person (over age 50, no symptoms) who has a positive hemoccult test in your screening. What is the probability that this person actually has colorectal cancer.
+
+4. [10 points] Suppose we have three random Variables A, B and C. Suppose that A and C are binary (True/False) and that B can take on three values (1,2,3). These variables are related in the following Bayesian Network (sorry for the crude arrows):
+
+    A
+   / \
+  v   v
+  B   C
+
+Suppose also that the following (conditional) probabilities govern:
+
+P(A=True)=0.4
+
+P(B=1|A=True)=0.6 P(B=2|A=True)=0.1
+
+P(B=1|A=False)=0.2 P(B=2|A=False)=0.7
+
+P(C=True|A=True)=0.8
+
+P(C=True|A=False)=0.9
+
+Note that in each case I expect you to be able to figure out the "missing" probability.
+
+A) Compute the Joint distribution for A, B and C.
+
+Use this table to compute:
+
+B) P(A=True|C=True)
+
+C) P(B=3|C=False)
+
+D) P(A=True|B=2,C=True)
+
+5. [10 points] (Adapted from Pearl (1988) ). Three prisoners, A, B, and C, are locked in their cells. It is common knowledge that one of them is to be executed the next day and the others are to be pardoned. Only the Governor knows which one will be executed. Prisoner A asks the guard a favor: "Please ask the Governor who will be executed, and then take a message to one of my friends B or C to let him know that he will be pardoned in the morning." The Guard agrees, and comes back later and tells A that he gave the pardon message to B. What are A's chances of being executed, given this information? Show how you come to your answer mathematically. Failing that try running a little simulation.
+
+
+Decisions Homework
+Objectives
+Use decision theory to make some simple choices.
+Use the strategies to make simple choices in combination to make make a more complex choice.
+Utility
+[9 points] If I am slightly risk averse which do I prefer in each of the following cases. Give a mathematical justification for your conclusion:
+
+[0.5,$900;0.5,$800] or [0.1,$8750;0.9,$0]
+[0.6,$100;0.4,$90] or [0.6001,$100;0.3999,$90]
+[0.5,$110;0.5,$90] or [0.5001,$90;0.4999,$150]
+ 
+
+Decisions
+This section follows the flow of the oil example given in class.
+
+Max Expected Utility
+Let P(x) = 0.2 for a Boolean Random Variable X.
+
+Assume that you have to make a decision D=1 or 2, leading to different utilities, both functions of X:
+
+U(D=1,x)= 400\, and U(D=1,\neg x)= 2\,
+
+U(D=2,x)= 20\, and U(D=2,\neg x)= 100\,
+
+[5 points] Compute the Expected Utilities and state what choice you would make.
+
+ 
+
+Posterior Expected Utilities
+Suppose that X (Boolean true, false) influences another Random Variable, Y (3-valued 1,2 and 3), in the following way:
+
+P(Y=1|x) = 0.2\,
+
+P(Y=2|x) = 0.4\,
+
+
+P(Y=1|\neg x) = 0.6\,
+
+P(Y=2|\neg x) = 0.3\,
+
+[5 points] Compute the posterior probabilities:
+
+Note that we will be computing many probabilities in this and subsequent sections. You may compute the joint of x and y and then sum the needed Values out of your joint or use Bayes' law directly.
+
+P(x|Y=1)\,
+P(x|Y=2)\,
+P(x|Y=3)\,
+[5 points] Use these probabilities to compute the posterior expected utilities:
+
+E(U(D=1,X|Y=1�\,
+E(U(D=2,X|Y=1�\,
+E(U(D=1,X|Y=2�\,
+E(U(D=2,X|Y=2�\,
+E(U(D=1,X|Y=3�\,
+E(U(D=2,X|Y=3�\,
+[6 points] What choice would you make in each of the following cases. What utility would you expect in each case given your choice? Use these three conditional expected utilities in the next section.
+
+Y=1
+Y=2
+Y=3
+ 
+
+Expected Value of Sample Information
+[5 points] Compute the following probabilities:
+
+P(Y=1)\,
+P(Y=2)\,
+P(Y=3)\,
+What is the Expected Posterior Utility, that is, multiply (pair-wise) the probabilities you just computed by the conditional expected utilities you computed at the end of the previous section, then add them up.
+
+[5 points] What is the Expected Value of Sample Information? (The expected Posterior Utility you just computed, minus the maximum expected utility computed at the beginning of this section)
+
+This sequence of questions led you through the computations needed for EVSI.
+
+The computation of the Maximum Expected Utility (the first question) is valuable in its own right, not just in the context of the computation of EVSI. It is the general key to making correct decisions.
+
+
+Objectives
+Make decisions in a much larger problem context, specifically a Markov Decision Process.
+Make decisions where the transitions and rewards are unknown.
+MDPs
+Consider the following simple MDP:
++---+---+---+
+| A | B | C |
++---+---+---+
+| D | E | F |
++---+---+---+
+There is a reward of 10 in state C
+There is a reward of 9 in state D
+C and D are absorbing
+Your available actions are Up, Down, Left and Right
+Use a discount (γ) of 0.9
+When you move you move in the intended direction with probability 0.9 and teleport back to state A with probability 0.1
+If you crash into a wall (try to go up when you are in state A, for example) you return to the state you were in.
+Do two full (all states) iterations of each of the following:
+[20 points] Value Iteration (start with U(s)=0 for all non-goal states, and the reward for all goal states, use Jacobi updates. If you don't remember what that is, it means that as you update state B, you use the un-updated values for the neighbors of B. in other words, use the old value for A, even though you have already computed the update for A)
+[20 points] Repeat the process for two full iterations of Modified Policy Iteration (start with π(s) = up for all states)
+For extra credit do policy iteration too, but you may use some tool to solve the linear equations. NO extra credit if you do it by hand! 
+Q-Learning
+[10 points] Using the modified version of the example used in class, shown below:
++---+---+---+
+| A | B | C |
++---+---+---+
+
+where:
+α = 0.5 (not 1.0 as in class)
+γ = 0.9
+Actions are up, down, right, left
+Transitions are non-deterministic
+C teleports to B
+Initialize the table to all 0.5
+Use the recommended form of the Q-value update Q(a,s) \leftarrow \alpha[R(s,a,s')+\gamma \max_{a'}Q(a',s')]+(1-\alpha)[Q(a,s)]
+Use R(s,a,s') = 1 if s' = C; 0 otherwise
+Treat Q(a,C) \equiv 0 for all a (Remember that you do not learn Q values for C).
+Compute the updates for the following trace:
+Step	 State	 Action	 Result	 Reward
+1	 A	 U	 A	 0.0
+2	 A	 R	 B	 0.0
+3	 B	 U	 A	 0.0
+4	 A	 R	 B	 0.0
+5	 B	 R	 C -> B	 1.0
+6	 B	 R	 B	 0.0
+
+
+
+

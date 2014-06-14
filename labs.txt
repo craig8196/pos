@@ -1,0 +1,565 @@
+Potential Fields Lab
+The purpose of this lab is to give you experience with simple reactive agents using potential field (see content) as a form of “intelligence”. You will do the following:
+
+Code up attractive fields
+Code up repulsive fields
+Code up tangential fields
+Use all three fields to help a BZRFlag agent capture an enemy flag, return to your base with the flag, and win the game!
+No internal states will be allowed for your agent. All actions should be based purely on the current state of the world. With two exceptions 1) when coding the PD Controller (see Controllers in Content), you will need to compute the derivative of (change in) the error, so you can keep your previous error, and 2) You can use the fact that you are holding the flag to know that it is time to return to your base.
+
+Implementation
+Assuming you already completed the BZFlag Tutorial Homework, you should have everything you need for this lab. Jonathan Nielsen got BZRFlag to work on Windows and was nice enough to share his accomplishment with everyone else see BZRFlag on Windows in Content.
+
+What you need to do
+In contrast to the BZFlag Tutorial Homework here you used telnet and your own intelligence to control the tanks, in this lab you will build a program to control the tanks. You can do this in any language you want and you can even run it on a variety of platforms. HOWEVER, we can only help you on Linux and in Python and C++. You are welcome to try other things but you will be more or less on your own.
+
+You will be responsible for building code to open a socket, sending commands (see the BZFlag resources  in Content) and listening for the responses. You are strongly encouraged to hunt around on the web for resources. If you find something useful please post a link on the discussion page. The sample code we give you is intended to be one such resource. As you write your networking code, start simple. Just use a synchronous model. You can add threads later, but you can build a successful agent without them. Go on a date instead of adding threads!
+
+A sample agent in Python has been provided in the bzrflag/bots directory, agent0.py. Please appreciate this code for what it is. While bzrc.py is a separate file that looks like a library, it is not intended to be a polished product. Depending on your language and programming environment, this code will serve as either a starting point or a helpful outline.
+
+There are also other pre-compiled bots in the ~cs470s/bzrflag/bots/compiled directory (agent1.pyc, agent2.pyc, and agent3.pyc). Throughout the labs, feel free to run these pre-compiled versions to have simple agents to test your code against. runme.sh shows how to use the pre-compiled agents. agent1.py is smarter than agent0.py, and agent2.py is smarter than agent1.py. agent3.py currently is only very slightly better than agent2.py; you probably will not be able to tell the difference between them. None of them are particularly intelligent - by the end of class I imagine you should be able to beat all of them.
+
+Some sample code has also been written in C++, see Content. Unfortunately, this code is much less cool than the sample Python agent, but again, it is a starting point to help you write your agent.
+
+In addition to the code you will need to communicate with your tank and to determine what it should do (potential fields), you will also need code to visualize your potential fields. There is help for using gnuplot for visualization in the Content section.
+
+Really Dumb Agents
+Once you have the basic socket communication working build a really dumb agent. This agent should repeat the following forever:
+
+Move forward for 3-8 seconds
+Turn left about 60 degrees and then start going straight again
+In addition to this movement your really dumb agent should also shoot every 2 seconds (random between 1.5 and 2.5 seconds) or so.
+
+Once you have one tank doing this, create a team that has two such agents.
+
+Hey, you can do better than that!
+Now create a simple reactive agent. You will do this using potential fields. Refer to the potential field tutorial in Content. You must build a potential fields based reactive agent (the "pf" agent) which implements the following fields:
+
+Attractive fields
+Repulsive fields
+Tangential fields
+Use all three fields to help a BZRFlag agent capture an enemy flag and return it to your base.
+
+Use the visualization code described above so that you can see your fields. You will also need visualization for your lab report.
+
+That is, I THINK you can do better than that
+You will need to test your pf agent as follows:
+
+Run your pf agent against your "Really Dumb Agent". Your pf agent should win, although you will have to do some tuning to win
+Run against two dumb agents, you should win
+Run your pf agent against another copy of itself
+Find another group, run your pf against their "Really Dumb Agent", you should win again
+Run against two dumb agents from the other group, you should be able to win
+Run your pf agent against their pf agent. Note that your grade does NOT depend upon which team wins, but it does depend upon what conclusions you can draw from the experience.
+Do each of these tests in the four l's world and in the rotated box world (both of these are already in bzrflag/maps).
+
+How To Pass Off
+To pass off this lab, you will need to do the following:
+
+Submit the following:
+All of your agent code
+A declaration of time spent by each lab partner
+A writeup of your experience with the lab
+It is NOT required that the you demonstrate your agent (using potential fields) can capture the enemy flag (guarded by two "Really Dumb Agents") in person.
+
+The writeup should describe in detail what all of the fields do and why you coded them in the manner that you did. Do not just say, “I used an attractive field,” Go into detail. Plot graphs of what the field looks like and put those into the paper. Plot them individually (attractive, repulsive, tangential, and any others that you came up with) and together. Explain your tuning process and what alternative you considered.
+
+You must also comment on your results for each of the test scenarios listed above. Do not just say "we won". What cool behaviors have you been able to create in your implementation? How did you do against someone else's dumb agent?
+
+You must report (briefly) on the results the "other group" had against you. Include their names to so that we can verify that everyone "passed off" against someone. Also give the names of the people you passed off against, again, make sure you say how you did.
+
+Though the paper need not be very long, do a nice job and make it look professional. I sort of expect to see a couple of pages of text and many graphs of your fields. One of the best ways to get a professional looking paper nearly for free is to use LaTeX, so that is what I recommend. PDF files are always appreciated, Postscript, Word, and Open Office are fine as well.
+
+Grading
+The lab will be graded out of 95 points, with break downs in the following way:
+
+10 points for coding the Dumb Agent and getting it working (i.e., if you get nothing else done except for the Dumb Agent, you get 10 points)
+45 points for the potential fields implementation and description
+20 points for the writeup and implementation of each of the three types of fields (why you picked what you did, and how you did it). Note that you are responsible for providing enough detail that I can see that you fufilled the requirements of the lab.
+15 points for graphs of the potential fields
+10 points for a description of the tuning process for your potential fields
+40 points for testing your agents
+15 points for the three tests that are done on your own
+25 points for the three tests against another team and your description of them (which is a longer description than the previous three tests)
+Failing to follow directions in other areas (like saying how much time was spent and submitting code) will also cause you to lose points.
+
+Acknowledgments
+Thanks to Chris Monson, Andrew McNabb, David Wingate and Kirt Lillywhite
+
+Purpose
+Explore how to use Bayesian reasoning in a somewhat challenging environment.
+Understand the power of probabilistic reasoning in the presence of noise.
+Use Bayesian reasoning when observations are nonlinear.
+This will be accomplished in the same bzrflag environment used for the other bzrflag labs.
+
+What you should learn:
+
+When you complete this lab, you should be well-informed in the following two areas:
+Applying Bayes rule in a sequential choice problem.
+Implementing a grid filter in a stationary environment.
+For each of these areas, you should be able to talk and write intelligently about the following:
+Memory required to store elements of the grid.
+Time required for the filter to converge.
+Sensitivity of results to noise levels.
+Sensitivity of results to the parameters of the likelihood function.
+ 
+
+Description
+Many robots in the world use some combination of sonars and lasers to sense distances to objects. Although these sensors are useful for providing information about when a robot is too close to an obstacle, it's only been within the last decade that algorithms have existed for taking these sensor readings and turning them into accurate maps of obstacles in the world. Naturally, the laser readings are more accurate than the sonar readings.
+
+The key breakthrough in using laser range finders to build maps of the environment was the application of Bayes rule to the problem of mapping observations from the laser into estimates of the states of obstacles in the environment. More specifically, people applied Bayes rule in a sequential choice problem using the extension known as the Bayes filter. The Bayes filter, in its general form, does not provide enough details to actually build a map of the environment from sensor readings. In addition to the general filter, robots needed some way to efficiently represent obstacles. They also needed some way to model the observation process --- something that was accurate enough to allow maps to be built, but simple enough to be computable in realistic time.
+
+In this lab, you will use a Bayes filter to estimate the locations of obstacles in the environment. You will represent obstacles using an occupancy grid and you will use a very simple sensor model. (In fact, the observations that you will make do not match any realistic sensor. The sensor created in the BZRFlag environment is designed so that you can use a very simple sensor model.) The occupancy grid discretizes the world into a grid of cells. Let S denote the set of all such cells in the environment. For each cell, we can conclude that the cell is either occupied or not occupied by an obstacle. Thus, if we let i and j represent the x index and y index of the cells, then the set of relevant states in the world consists of an "occupied" or "unoccupied" label for each cell. Thus, S=\{s_{i,j}\ :\ s_{i,j}\ =\ \text{occupied}\ \text{or}\ s_{i,j}\ =\ \text{unoccupied}\}.
+
+As the robot moves around the environment, it has a sensor that can take noisy sensor readings of the cells around it. For the purposes of this lab, we set this sensor to be a square that is centered on the robot. The square is known as the sensor footprint of the robot, meaning the set of states surrounding the robot that are sensed. Outside of this square, no information is obtained about obstacles in the world. Within this square, information is returned about obstacles in the world, but this information is noisy. Sometimes the sensor says that a cell is occupied when it is not, and sometimes the sensor says that a cell is unoccupied when it is. We call these two errors a false alarm and a missed detection, respectively.
+
+The size of the sensor is set by the --occgrid-width command line option to bzrflag. In this lab you will get a small occupancy grid, 100x100. Interestingly, this sensor can see all cells within this grid; there is no occlusion (like their normally would be with a range sensor, since range sensors typically cannot see through things).
+
+The sensor will return one of two readings for each cell within the sensor footprint: a hit or a miss. Since the sensor cannot see outside of the sensor square, we do not get to observe obstacles throughout the entire environment; there are many cells for which we do not get observations. Thus, the set of observations is O={hit, miss, no_data} for each cell in the world.
+
+Your job is to translate these observations into estimates of occupied space by applying the Bayes filter. The term "grid" simply means that we represent states of the world in a grid of x and y values. For each cell in the grid, you should estimate the probability that it is occupied. (You automatically get the probability that it is not occupied, since p(s=occupied) = 1-p(s=not occupied).) You will update this estimate as you get more observations. This means that you should apply Bayes rule to translate observations into estimates of the true state. The pseudo-code for this lab looks something like the following:
+
+for each state si,j of the world
+     observe oi,j from the set {hit, miss, no_data}
+      update p(si,j = occupied | oi,j) = p(oi,j | si,j = occupied)p(si,j = occupied) / p(oi,j)
+       move the robot and repeat
+When you are confident in your probabilities, set a threshold. If the probability of it being occupied is high enough, conclude that the cell is occupied. Print out a map of the occupied space in the world.
+
+There are four things that you will need to focus on to get this pseudo-code to work in practice. First, you will need to create a likelihood. This is easily done by getting two parameters from the server: the probability of a true positive and the probability of a true negative. These two numbers completely specify p(oi,j | si,j). The numbers can be set as command line parameters (see bin/bzrflag -h), and they are obtained by the server as part of the response to the 'constants' command.
+
+P(observed = occupied | state = occupied) is approximated as true positive rate
+P(observed = not occupied | state = occupied) is approximated as false negative rate
+
+P(observed = occupied | state = not occupied) is approximated as false positive rate
+P(observed = not occupied | state = not occupied) is approximated as true negative rate
+Second, you can improve the efficiency of your algorithm by noting that obstacles are made up of several occupied cells. If you are clever, you can observe that the probability of a cell being occupied is pretty low if none of the cells around it are occupied, and it's pretty high if all of the cells around it are occupied. Although you do not need to do this to get the lab to work, it may make your algorithm converge more quickly. However, it may also take more time to implement since you will need to look at cells around a particular cell to update its posterior probability.
+
+Third, you will have to start with a prior probability that makes sense to you. I started with a high prior probability of a cell being occupied since the likelihood that I used did a better job concluding that a cell was not occupied than that a cell was occupied. You should experiment with a few things to see what works for you.
+
+Fourth, you should be smart in how you have your robots move in the environment so that you build up your map as quickly as possible. You should be able to do better than just randomly wandering. You can use your potential field code to move the tank by artificially changing the goal location from time to time.
+
+Implementation
+Visualizing this lab is incredibly helpful, so that you can see what you are doing. I do not recommend using Gnuplot for visualizing this lab; you can if you want to, but other methods probably work better. Those of you who have been using things besides Gnuplot to visualize may already have a decent way to visualize this lab - all you need to do is display a grid that is gray-scaled based on your belief of whether or not the cell is occupied. If you know OpenGL (say from CS 455), it is very well suited this type of visualization. There is some sample Python code here, that should be usable even if you do not know OpenGL. Just call init_window() when you first start your agent, then update_grid() and draw_grid() in turn whenever you want to update the window (every time you update the grid, I would think). If you want to see what the code looks like when used properly, change runme.sh to use grid_lab_agent instead of agent2 (i.e., use blind.py to run the pre-compiled grid_lab_agent.pyc in bots/compiled). You can use ascii art if you really can not do better.
+
+It can be rather slow to request the occgrid every tick for 10 tanks, depending on your language and how you implement your code. You can choose how many tanks you want to use for this lab - if your code can handle 10, or 20 tanks just fine without slowing down, feel free to use 20 tanks. If it is more efficient for you to use 1 or 2 tanks, go ahead. You should be able to map the world in a few minutes.
+
+Run bzrflag with the following parameters (plus some world, and any other necessary parameters):
+
+--default-true-positive=.97 --default-true-negative=.9 --occgrid-width=100 --no-report-obstacles
+As a reminder, see the BZRC Protocol for how to use the occgrid command.
+
+What to Turn In
+You need to turn in enough material for me to see that you have complete the objectives of the lab. You should turn in a report that includes at least the following:
+
+Visualizations, at several points in time, with an explanation of what is happening. Comment on which probabilities you are computing and give the values you obtain for some sample point in the space through time. Use at least two of the provided maps, but focus your discussion on just one. It is your responsibility to be clear and persuasive. Print out values, reference sections of your code and use the visualizations.
+A discussion of how you got your tanks to search the world, including how many tanks your code could handle reasonably, whether or not you did anything tricky like looking at neighboring cells in the grid, how you moved your tanks around, what you did when tanks got stuck, etc. Again, be clear and persuasive.
+A discussion of what happens when the sensor has different parameters (ex. it has a bigger range, it returns noisier estimates, you have an incorrect model for the amount of noise it returns, it only detects moving objects, etc.) - some of this you can test by varying the parameters you pass to bzrflag, and some you may have to just speculate on (like the moving objects bit).
+A discussion of how you would apply the grid filter when competing with a live opponent. Comment on the fact that you might get shot if you spend too much time wandering around the opponent's territory without having a good map, and that asking for the occupancy grid takes time.
+A summary of what you learned.
+The amount of time you and your partner spent on the lab.
+The point breakdown for this lab will be as follows:
+
+25 points for a persuasive narration of the process shown in your visualizations.
+15 points for your discussion of how your tanks searched the world.
+10 points for discussing what happens as the parameters of the sensor vary.
+10 points for your thought about how you will use the grid filter against a really opponent.
+10 points for everything else, including the look and completeness of your report.
+
+
+Objectives
+
+This assignment is designed to:
+solidify the ideas of text classification by classifying text documents
+provide hands-on experience with the graphical model known as Naïve Bayes
+provide experience with smoothing
+introduce the idea of a confusion matrix to facilitate error analysis
+build understanding necessary for problems that use text classification (especially spam classification, document sorting, routing, and filtering, language identification, etc.)
+Overview
+
+For this project, you will build a model that will predict a label for a given input datum. The input will be a document. Since you will be working with documents, the model should predict the category to which the document belongs. To accomplish this task, you will conduct supervised learning, in which all of the training data is labeled. You will train a Naive Bayes model using:
+a Multivariate Bernoulli model,
+a multinomial model, and
+a smoothed model.
+See http://en.wikipedia.org/wiki/Naive_Bayes_classifier for the first two, we will talk about how the last one is different in class.
+Data
+
+You will be using the well-known "20 Newsgroups" data set consisting of 20,000 Usenet posts. Each document belongs to one of 20 Usenet newsgroups. See Content for a link to the data.
+Coding Requirements
+
+[20 points] A classifier implemented as a conditional query over classes on a Naïve Bayes (a.k.a. class-conditional unigram) model.
+Using Catagorical observations
+Using Multinomial observations 
+Using Smooth of your choosing.
+As you are classifying documents, use words as the evidence.
+[5 points] A baseline classifier
+You could use the most frequent label as a weak baseline.
+[10 points] A confusion matrix as illustrated here. A confusion matrix is simply a two-dimensional table with true labels ("REF" for reference) along one axis and predicted labels ("HYP" for hypothesis) along the other. Cells in the matrix / table contain the count of the instances with true label REF confused for predicted label HYP. Entries along the diagonal capture correct classification, as illustrated in the figure. Use test data (which is a subset of the data) for this analysis.
+
+
+ 
+Report Requirements
+
+Please limit the non-code portion of your report to 4 pages maximum.
+For this assignment, you should write a well-structured report on the work you have done, including the following ingredients:
+Time: Please include at the top of page 1 of your report a clear measure (in hours) of how long it took you (each) to complete this project.
+[10 points] Design Decisions: The report should specify what you built and what choices you made. Please do not simply submit a debug or work log.
+[10 points] Results: The report should include the accuracies, confusion matrices, etc., for each model.
+[20 points] Error Analysis: Your report should also include error analysis that responds to the questions raised below – enough to convince us that you looked at the specific behavior of your models and thought about what they’re doing wrong and how you’d fix them.
+The primary goal of error analysis is to understand what your classifiers are doing well, what they’re doing badly, and why.
+Use your confusion matrix to show how often each pair of labels is confused.
+Use diagrams, graphs, and interesting examples, where needed, to make your points.
+[10 points] Questions: Address the following questions:
+How are the results surprising?
+Why do you think some labels are easier or harder?
+Identify some specific errors that are particularly revealing as to why or how the system makes errors.
+What cases would you (as a human) have trouble with? If so, identify a few and discuss them.
+If you were going to invest a large amount of effort into raising the accuracy of this system, what would you do and why?
+[10 points] Validation: For your model(s), demonstrate how or justify why the distributions in your model are proper distributions.
+Option 1: To justify that your distributions are proper (i.e., valid), you need to explain why the local model parts of your overall model (P(c) and P(w|c)) are proper distributions.
+Option 2: To demonstrate that your distributions are proper, show that the local model parts of your overall model (P(c) and P(w|c)) are proper distributions by actually summing over all values in the range of random variable over which the distribution assigns probability.
+Feedback: Include at the end of your report a short section titled "Feedback". Reflect on your experience in the project and provide any concrete feedback you have for us that would help make this project a better learning experience.
+Code: Include your code at the end of your report.
+[10 points] Miscellaneous, including the clarity and structure of your report.
+Acknowledgments
+
+Thanks to Dr. Eric Ringger for this assignment.
+
+Objectives
+The objectives of this assignment are to:
+
+think about the nature of language,
+
+solidify the ideas of dealing with sequences of random variables, in particular Markov models and HMMs,
+
+provide experience with the Viterbi algorithm.
+
+
+In this lab we will build a system that can assign part of speech tags (pos tags) to arbitrary text. We will do this by allowing the computer to learn part of speech tagging from training data, not by coding up explicit rules.
+
+Wikipedia http://en.wikipedia.org/wiki/Part-of-speech_tagging gives the following summary of Part-of-speech (POS) tagging:
+
+Schools commonly teach that there are 9 parts of speech in English: noun, verb, article, adjective, preposition, pronoun, adverb, conjunction, and interjection. However, there are clearly many more categories and sub-categories. For nouns, the plural, possessive, and singular forms can be distinguished. In many languages words are also marked for their "case" (role as subject, object, etc.), grammatical gender, and so on; while verbs are marked for tense, aspect, and other things. Linguists distinguish parts of speech to various fine degrees, reflecting a chosen "tagging system".
+
+In part-of-speech tagging by computer, it is typical to distinguish from 50 to 150 separate parts of speech for English. For example, NN for singular common nouns, NNS for plural common nouns, NP for singular proper nouns (see the POS tags used in the Brown Corpus). 
+
+We will build our POS tagger in two steps, described below.
+Tagging in Two Steps
+You will build simple language modeling system and then a full POS tagger.
+
+Language Modeling
+The first of these two tasks is to build an n-gram language model (http://en.wikipedia.org/wiki/N-gram) and generate English-like text by starting with a seed word and sampling from your model, as shown in class. This is a task of prediction as discussed in Chapter 15. In our case, the words in our training data are the variable Xi as shown in figure 15.1 part a. Each word depends on the word before it (bi-gram), or as shown in figure 15.1 part b, the two words before it, or in general, the n words before it. In the bi-gram case you will need to compute the probability with which each word type appears after each word type. For example, that following the word "a" the word type "dog" appears 60% of the time, "cat" 30% of the time and "professor" 10% of the time. Likewise after the word "aardvark", the word "is" appears 70% and "was" appears 30%. The combination of these probabilities for all word types is the transition probability for the first order Markov process described by equation 15.1.
+
+Note that there are two phases to this, a training phase where you gather the needed probabilities, and a generation phase, where you start with a seed word, X0 and then use the transition probabilities to generate next word randomly, but consistent with the transition probabilities you learned in the training phase. This process is repeated as much as you want, using the randomly chosen word to choose the next randomly chosen word. 
+
+This task is not hard. I have used it (not as an assignment, just for fun) in our introduction to programming class, cs 142. If you know how to program using maps and queues, you can do it in about 30 lines of code. It is a great context to sort out some ideas that you will need for POS tagging.
+
+You can use the text from the Penn Treebank data provided in Content, or you can find your own data. I really enjoy using poetry.
+
+Repeat this task but for a second order Markov process, where the transition probabilities depend on two words of context instead of just one. See Figure 15.1 part b
+
+"HMM for POS" Task
+The second task is the real task of generating POS tags for arbitrary text. This task is harder.
+
+In this task we will use a Hidden Markov Model or HMM. See Chapter 15 again. In the case of Part of Speech tagging, we will use the part of speech as the hidden variable ( Xi) and the word token as the evidence (Ei). See equations 15.2 and 15.3. This part of the lab will also have two parts, a training part (like in the language modeling task), but instead of generating text, we will estimate part of speech tags for new, previously unseen data, we will call this "labeling".
+
+Training:
+Figure 15.2 shows the basic structure of an HMM, however in our case the hidden states (the sequence of random variable on the top) will not be the weather, they will be parts of speech. The evidence (the random variables hanging at the bottom) will not be a binary umbrella variable, but rather the sequence of words in our text.
+
+Just like in the Language Modeling task you will need to learn the transition probabilities, but not for the words, but rather for the parts of speech. The training data provided in "Content" gives ordered pairs including the part of speech and the word token. The transition probabilities only depend on the part of speech part of the data.
+
+You will also need to learn the "sensor" or "emission" model (Equations 15.2), that is, for each part of speech, the probability of seeing each possible word. For example, if Xi is "Noun" the word token is "dog" 40% of the time, "cat" 30%, "fish" 20%, and "snake" 10%.
+
+Labeling:
+Once you have these probabilities you can use the Viterbi algorithm to find the most likely sequence of tags given an unlabeled sequence of text. The Viterbi algorithm is described in section 15.2.3 (for some reason, they do not tell you it is called Viterbi until the end of the section!).
+
+Repeat this task but for a second order Markov process for the transitions, where the transition probabilities depend on two POSs of context instead of just one.
+
+Data
+We will use part-of-speech tagged sentences from a flattened version of the Penn Treebank Wall Street Journal data set. This data is split according to the convention in the NLP research community, into training, validation, and test sets.
+
+For your reference, the set of tags used in this task is documented here:
+
+http://www.comp.leeds.ac.uk/amalgam/tagsets/upenn.html
+IMPORTANT: The Penn Treebank is used under license by BYU from the Linguistic Data Consortium. We provide access to students according to the terms of the license. Please use the data only for the purposes of the project and do not share the data with anyone outside of the class.
+
+Coding Requirements
+You are required to train on a significant portion of the training set. It can be computationally and time-intensive to train on all of the data. Be sure to validate that your code is working on a small portion of the training data; once you are satisfied that it is working, proceed on the full training set, or at least a larger portion of it.
+
+Report Requirements
+Please limit your report to 6 pages of prose, not including large tables or figures.
+
+Write a report on the work you have performed. You should describe what you built, what choices you had to make, why you made the choices you did, how well they worked out, and what you might do to improve things further.
+
+[5 points] Clear writing is an important aspect of your report. Also, label the sections of your report. Include an introduction and conclusion. Structure your report in such a way that it is easy to read and follow.
+
+[5 points] Show that you obtained reasonable transition probabilities in the first order language model.
+[5 points] Show that you can generate reasonable looking random text from the first order model.
+[5 points] Show that you obtained reasonable transition probabilities in the second order language model.
+[5 points] Show that you can generate better looking random text from the second order model.
+[7 points] Show that you obtained reasonable transition and emmision probabilities in the first order HMM.
+[15 points] Show that you can predict reasonable looking POS tags for new (test) text using the first order HMM.
+[7 points] Show that you obtained reasonable transition and emmision probabilities in the second order HMM.
+[16 points] Show that you can predict better POS tags for new (test) text using the second order HMM.
+[10 points] Include confusion matrices (remember, as in the Naive Bayes lab) to evaluating your ability to predict POS tags for the first and second order models (above). Since the full tag confusion matrices are large, you could display only the most interesting parts of a confusion matrix. One possible way to do this is to implement a total threshold to filter rows or columns (so that tag rows and columns confused fewer than a given number times will not be displayed).
+[10 points] Throughout, provide evidence that you looked at the specific behavior of your models, thought about what they are doing wrong, and took appropriate action.
+[10 points] Working code.
+You are also required to include at the top of page 1 of your report a clear measure (in hours) of how long it took you (each) to complete this project.
+
+Please also include in your report a short section titled "Feedback". Reflect on your experience in the project and provide any concrete feedback you have for us that would help make this project a better learning experience.
+
+Submission
+Submit your code and report on learning suite. Your report should be a .pdf document.
+The purpose of this lab is to give you an idea of what the Kalman Filter does and under what conditions it works well (HINT: it doesn't work perfectly in every situation). In addition to tracking enemy tanks, the Kalman Filter will help you compensate for sensor noise, which is introduced in this lab (and will be present in the final tournament). You will be required to do the following:
+
+Code up a few simple "clay pigeon" to aim at (two will meet the assumptions of the Kalman filter, one will not)
+Code up the multivariate Kalman Filter update equations
+Draw the filter's output for your "clay pigeons"
+Note that the numbers provided below are just a starting point. I expect you to have to adjust them to get this to work, that will be the hard part.
+
+Description
+Conforming Clay Pigeon
+The Kalman Filter makes a number of assumptions about the path that the tracked object is following. Your first task is to code several "Clay Pigeon" that conforms to these assumptions. You will make 2 Conforming Clay Pigeons which behave in the following ways:
+
+"Sitting Duck"-- Just sit there
+Constant x and y velocity (a straight line)
+ 
+
+Non-conforming Clay Pigeon (the "Wild Pigeon")
+Your second task is to build a Clay Pigeon that violates the Kalman assumptions in some way (your choice). Try to make it as hard to hit as you can.
+
+ 
+
+The Kalman Agent
+Your Kalman Agent must also plot the density of the output of the Kalman Filter (see GnuplotHelp). You will need to plot your filtered estimate of the current location of the clay pigeons and the projected locations. Please code up the plot early rather than at the end of the project; it is a great debugging tool and will really help you understand what is happening with the Kalman Filter.
+
+Use the empty world (remove all obstacles). Both teams should be run with --[color]-tanks=1 (1 player on each team). Your agent should be run with noise by using --default-posnoise=5 (Please comment on the discussion page or talk/email me if you have trouble with this much noise, try various values). Your agent may rotate but may not move. You should successfully track and reliably (maybe not perfectly) shoot the Conforming Clay Pigeons. There may also be instances where the random starting position of the enemy puts it out of range of your tank for an extended period of time.
+
+Part of your task is to tune your Kalman agent to do as well as possible on your Wild Pigeon. When reporting your results, explaining exactly why you had difficulty and what you tried to do about it. Communicate the creative efforts you used to mislead the Kalman Filter and what you did to try to overcome these problems.
+
+ 
+
+Example Matrices
+To accomplish this lab, it is helpful to understand the "physics" used by the enemy agent. We will represent these physics using matrices as done in the class discussions. You will want to play with the values in these matrices, especially Σx and Σz, and we encourage you to do so in order to better understand how the Kalman Filter works.
+
+Initially, your clay pigeons will be at some unknown position on the playing field, and the velocity and acceleration will both be zero. You can use that information to create your initial estimates of the mean and covariance. The physics are based on the six values in our state vector (in this order, represented as a column vector):
+
+X_t =
+\begin{bmatrix}
+x_t \\
+\dot{x}_t \\
+\ddot{x}_t \\
+y_t \\
+\dot{y}_t \\
+\ddot{y}_t
+\end{bmatrix}
+
+where x and y are the (x,y) position of the enemy agent, \dot{x} is the x component of the agent's velocity, \ddot{x} is the x component of the agent's acceleration, and etc. Note that we use Xt to represent the entire observation at time t.
+
+ 
+
+Initialization
+Given this state vector, the Kalman Filter will produce a mean estimate for this vector μ and a covariance matrix for this vector Σ. So, your initial estimates of the mean and covariance could look like these:
+
+\mu_0 =
+\begin{bmatrix}
+0 \\
+0 \\
+0 \\
+0 \\
+0 \\
+0
+\end{bmatrix}
+
+which means that you think the agent begins at the origin with no velocity and no acceleration, and
+
+\Sigma_0 =
+\begin{bmatrix}
+100 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0.1 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0.1 & 0 & 0 & 0 \\
+0 & 0 & 0 & 100 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0.1 & 0 \\
+0 & 0 & 0 & 0 & 0 & 0.1
+\end{bmatrix}
+
+which means that you are pretty sure that the agent is not accelerating or going anywhere, but that you are pretty unsure exactly where the agent is.
+
+ 
+
+Motion or Transition
+Our model assumes that once every time period (Δt), the enemy agent's state X will be updated by the server as follows:
+
+Xt+1∼N(FXt,Σx)
+
+In other words, the location of the enemy agent is drawn from a normal distribution (represented by "N")  with a mean vector with the value FXt and a variance/covariance of ΣX. You can read the ∼ as "is randomly drawn from". That is, Xt+1 will be randomly chosen from a normal distribution centered at a new location based on the old location (Xt) with the motion model F applied (yielding FXt). Since the initial state and all subsequent states are random variables, these variables are capitalized to be consistent with our notes in class. The F matrix used in this lab is precisely the one that we derived in class using Newton's laws of motion (with one exception):
+
+F =
+\begin{bmatrix}
+1 & \Delta t & \Delta t^2/2 & 0 & 0 & 0 \\
+0 & 1 & \Delta t & 0 & 0 & 0 \\
+0 & -c & 1 & 0 & 0 & 0 \\
+0 & 0 & 0 & 1 & \Delta t & \Delta t^2/2 \\
+0 & 0 & 0 & 0 & 1 & \Delta t \\
+0 & 0 & 0 & 0 & -c & 1
+\end{bmatrix}
+
+where the c indicates that we have a linear friction force working against this agent. If in this lab, you re-compute every half-second then Δt = 0.5. Try setting the friction coefficient c to 0 to start out with because there is no friction in the server. In my experience that works best but some students have said that it was easier to get it running with a small c.
+
+ 
+
+Uncertainty
+Each Xt is a sample drawn from a multivariate normal distribution. In our model the x and y positions and velocities are determined by newtonian physics. The x and y accelerations are uncertain.  A good place to start is with a covariance matrix that allows acceleration to vary from the model more than velocity or position, like the following:
+
+\Sigma_x =
+\begin{bmatrix}
+0.1 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0.1 & 0 & 0 & 0 & 0 \\
+0 & 0 & 100 & 0 & 0 & 0 \\
+0 & 0 & 0 & 0.1 & 0 & 0 \\
+0 & 0 & 0 & 0 & 0.1 & 0 \\
+0 & 0 & 0 & 0 & 0 & 100
+\end{bmatrix}
+
+Note that there are some other influences on the behavior of the agent (such as being stopped by running into a wall) that are not included in the newtonian model. For this reason the covariance matrix given above, does not use zeros for the position and velocity entries. You might find that 100 is probably too big for the variance in acceleration. You will want play with the values in this covariance matrix.
+
+The noisy measurements of the enemy position will have zero-mean Gaussian noise with a standard deviation of 5 units in each dimension. The sensor model is as follows:
+
+Zt∼N(HXt,ΣZ)
+
+In this equation, Xt is a random variable representing the true (unknown) state, and Zt is a random variable representing the noisy and limited observations provided by the server. Each observation from the server is a sample from a normal distribution with mean HXt and mean ΣZand is encoded as a 2-dimensional vector. These samples are used to perform inference about Xt.
+
+NOTE: As I recall, while you get x and y positions and \dot{x} and \dot{y} velocities for your own tank, you only get x and y for other tanks.
+
+The observation matrix, H, selects out the two "position" values from the state vector. It looks like this:
+
+H =
+\begin{bmatrix}
+1 & 0 & 0 & 0 & 0 & 0 \\
+0 & 0 & 0 & 1 & 0 & 0
+\end{bmatrix}
+
+Since these measurements are corrupted by noise, it is important to know the covariance matrix of this noise. Since the standard deviation of the x and y position noise is 5 and since these two noises are uncorrelated, the covariance matrix is given by:
+
+\Sigma_z =
+\begin{bmatrix}
+25 & 0 \\
+0 & 25
+\end{bmatrix}
+
+NOTE: I may change this, make it a parameter!
+
+ 
+
+Implementation Hints
+You are more than welcome to implement your own matrix manipulation code. However, you are encouraged to spend your precious time on more important things. Find a reputable source and download a matrix package. If you are using python, I think all of the needed matrix operators are available in numpy. I think numpy is on the lab machines.
+Here are the three Kalman update equations (NOTE: The third equation is wrong in the second edition of the book! It was fixed for the third edition):
+Kt + 1 = (FΣtFT + Σx)HT(H(FΣtFT + Σx)HT + Σz) − 1
+
+μt + 1 = Fμt + Kt + 1(zt + 1 − HFμt)
+
+Σt + 1 = (I − Kt + 1H)(FΣtFT + Σx)
+
+Be careful not to get confused with the different Σ matrices: Σx, Σz and the various Σt matrices (one for each time step t).
+Note that these four matrices are constants, so can be initialized once: F,Σx, H, Σz.
+Note also that since H and F are constant, HT and FT are also constant, and can be precomputed just once.
+Initialize your μ0 and Σ0 matrices at the start of each run.
+Don't be too scared by all the subscripts in the Kalman equations. Just think of t as "the last time" and t + 1 as "this time."
+Note also that the expression (FΣtFT + Σx) occurs three times in the equations, so you may save some time by calculating that first.
+To apply predictions into the future, you don't make additional observations, so you shouldn't use the full equations. Instead, use this equation:
+μt + 1 = Fμt
+
+What to Turn In
+To pass off this lab, you will:
+
+Submit all of your code electronically.
+Turn in a declaration of time spent by each lab partner
+You must use the Kalman filter and adapt it to this lab problem to get credit for this lab.
+As with the other labs, produce a report that describes what you have done.
+Your report should include information about what kinds of transition and covariance matrices you used and how it affected performance. Do meaningful experiments that test the abilities of the filter, and try to make meaningful and insightful observations. Discuss why it works better or worse in various circumstances.
+
+For this assignment, you should write a well-structured report on the work you have done, including the following ingredients:
+
+Time: Please include at the top of page 1 of your report a clear measure (in hours) of how long it took you (each) to complete this project.
+
+[10 points] Design Decisions: The report should specify what you built and what choices you made. Be clear about how you used the output of the Kalman filter in the context of targeting. Please do not simply submit a debug or work log.
+
+[5 points] Quality of your Kalman filter implementation
+
+[5 points] Quality of your targeting implementation
+
+[5 points] Notes and results in building the conforming agent
+
+[10 points] Notes and results in building the non-conforming agent
+
+[5 points] Note and results in hitting the stationary agent using the Kalman filter
+
+[10 points] Notes and results in hitting the conforming agent
+
+[10 points] Notes and results in hitting the non-conforming agent
+
+[10 points] Notes and results in hitting a conforming agent built by some other group in the class
+
+[10 points] Notes and results in hitting a non-conforming agent built by some other group in the class
+
+[10 point] Visualization used in the notes and results presented above. Try to tell your story with pictures more that just thousands of words.
+[10 points] Miscellaneous, including the clarity and structure of your report.
+
+Feedback: Include at the end of your report a short section titled "Feedback". Reflect on your experience in the project and provide any concrete feedback you have for us that would help make this project a better learning experience.
+
+Acknowledgments
+Thanks to Chris Monson, Andrew McNabb, David Wingate and Kirt Lillywhite
+
+Final Lab
+The purpose of this lab is to put several of the ideas we have used during the course of the term together. In the process I hope we have some fun too.
+
+Specifically, your task for this lab is to build a bzrflag agent that can defeat the agents built by your fellow classmates. You will compete in an environment where there is both noise on the reported locations of obstacles and noise on the position of enemy tanks. Your objective is to capture your opponent's flag and return it to your base.
+
+There is not time to construct an agent from scratch that does this, so I am expecting that you will do this by combining ideas from the Potential Fields, Grid and Kalman labs. Note that in the potential fields lab we strictly limited the amount of "state" information that you were able to keep. That restriction no longer applies, you can keep whatever "state" information you want. For example you might want to have a state that represents that a tank is assigned as a "guard"  or as an "attacker", or that the flag has been captured and that the fields should be adjusted.
+
+Procedure
+On Monday the 16th (last day of class) we will meet in the lab in the basement of the west wing of the tmcb (the exact room will be announced here).
+
+You will run your agent against at least 3 other teams. We will use these settings unless someone finds a problem with them:
+
+General:
+
+--friendly-fire         You will be safe from friendly fire
+--time-limit=240        Life is short!
+--respawn-time=240      Sorry, you will not be coming back in this life
+--max-shots=3           Three shots at a time
+--default-tanks=10      Have fun!
+
+Less noise than the Kalman lab:
+
+--default-posnoise=3
+
+These are just like in the grid lab:
+
+--default-true-positive=.97
+--default-true-negative=.9
+--occgrid-width=100
+--no-report-obstacles
+These tests will be run in a world to be revealed on the day of the competition (so that you can not hard code the world).
+
+You must at least try to run with these settings. However, you may make adjustments if you run against a group that can not handle one or more characteristics. In such a case you will need to note this in your report (see below).
+
+What to Turn In
+To get credit for this lab, you will:
+
+[Required] Submit all of your agent code electronically
+[10 points] Combine the ideas you have experimented with in the three bzrflag labs, and describe the code and features you incorporated (about a page)
+[Required] Turn in a declaration of time spent by each lab partner
+Submit a report of how you did against each of the three other teams you competed against. I would expect to see about one page each other group you competed with, but insight and analysis is more important than quantity.
+The most important part of this is the last part. Saying merely that you won or lost will not be sufficient. I want you to talk to the other teams about what they did and why. Consider your own performance in the context of the other teams strategy. You must comment on your own performance and implementation AS WELL AS the performance and implementation of the other team in terms of:
+
+[5 points] Ability to make progress to get the flag and return it to your base
+[5 points] Ability to target and hit the enemy tank
+[5 points] Ability to cope with world noise (uncertainty)
+[5 points] Special strategies employed (how effective were they and how were they responded to by the other team)
+[5 points] Adjustments to the server settings you made to make the competition more interesting (hint: "none" is not a good answer)
+[5 points] Quality of the implementation including the general approach and the code. (You only have to do this once for your code)
+Note that you will report on these observations for 3 groups, so 3 times 30 point = 90 points.
+
+Acknowledgments
+Thanks to Chris Monson, Andrew McNabb, David Wingate and Kirt Lillywhite
+
